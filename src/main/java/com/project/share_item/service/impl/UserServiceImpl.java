@@ -23,13 +23,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto createUser(UserDto userDto) {
         log.info("Добавлен пользователь {} ", userDto.getName());
-        if (userDto.getEmail().isEmpty()) {
-            userDto.setEmail("default@mail.ru");
-        }
-        if (userDto.getEmail().contains("user.com")) {
-            throw new RuntimeException("Указан некорректный email адрес");
-        }
-
+        validateEmail(userDto);
         userWithEmailExists(userDto);
 
         User newUser = userMapper.toEntity(userDto);
@@ -77,6 +71,16 @@ public class UserServiceImpl implements UserService {
         Optional<User> existingUser = userStorageDao.findByEmail(userDto.getEmail());
         if (existingUser.isPresent()) {
             throw new RuntimeException("Пользователь с таким email: " + userDto.getEmail() + " уже существует");
+        }
+    }
+
+    public void validateEmail(UserDto userDto) {
+        if (userDto.getEmail().isEmpty()) {
+            userDto.setEmail("default@mail.ru");
+        }
+        String emailRegex = userDto.getEmail();
+        if (!emailRegex.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")) {
+            throw new RuntimeException("Указан некорректный email адрес");
         }
     }
 }
