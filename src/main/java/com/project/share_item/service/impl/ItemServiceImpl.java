@@ -1,36 +1,104 @@
 package com.project.share_item.service.impl;
 
 import com.project.share_item.dao.Item;
-import com.project.share_item.dao.User;
+import com.project.share_item.dao.ItemStorageDao;
+import com.project.share_item.dao.UserStorageDao;
+import com.project.share_item.dto.ItemDto;
 import com.project.share_item.dto.ItemRequestDto;
 import com.project.share_item.dto.ItemResponseDto;
 import com.project.share_item.exceptions.ObjectNotFoundExceptions;
 import com.project.share_item.mapper.ItemMapper;
 import com.project.share_item.service.ItemService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ItemServiceImpl implements ItemService {
-    private final Item item;
-    private final User user;
+    private final ItemStorageDao itemStorageDao;
     private final ItemMapper itemMapper;
     private final AtomicLong itemIdGenerator = new AtomicLong(1);
+    private final UserStorageDao userDao;
 
     @Override
     public ItemResponseDto addNewItem(Long userId, ItemRequestDto itemRequestDto) {
+        log.info("Добавление нового предмета");
+        validateUser(userId);
+        validateItemDto(itemRequestDto);
 
-        if (user.existsById(userId)) {
+        Item newItem = itemMapper.toEntity(itemRequestDto);
+        newItem.setOwnerId(userId);
+        newItem.setId(itemIdGenerator.getAndIncrement());
+
+        Item savedItem = itemStorageDao.saveItem(newItem);
+        return itemMapper.toResponseDto(savedItem);
+    }
+
+    @Override
+    public ItemResponseDto updateItemById(Long userId, Long itemId, ItemDto itemDto) {
+        log.info("Редактирование предмета с id {}", itemId);
+        Item updateItem = itemStorageDao.findById(itemId);
+        validateItem(itemId);
+        validateUser(userId);
+
+        if (itemDto.getName() != null) {
+            updateItem.setName(itemDto.getName());
+        }
+        if (itemDto.getDescription() != null) {
+            updateItem.setDescription(itemDto.getDescription());
+        }
+        if (itemDto.getAvailable() != null) {
+            updateItem.setAvailable(itemDto.getAvailable());
+        }
+        itemMapper.itemToItemRequestDto(updateItem);
+        itemStorageDao.saveItem(updateItem);
+        return itemMapper.toResponseDto(updateItem);
+    }
+
+    @Override
+    public ItemResponseDto getItemById(Long id, Long userId) {
+        log.info("Получение предмета с id {}", id);
+        Item getItem = itemStorageDao.findById(id);
+        return itemMapper.toResponseDto(getItem);
+    }
+
+    @Override
+    public List<ItemResponseDto> getAllItems(Long ownerId) {
+        log.info("Получение списка вещей");
+        List<Item> itemList = itemStorageDao.getAllItemsByOwner(ownerId);
+        return itemMapper.toResponseDtoList(itemList);
+    }
+
+    @Override
+    public List<ItemResponseDto> searchToItemsByText(Long userId, String text) {
+        log.info("Поиск предмета - {}", text);
+        if (text == null || text.isEmpty()) {
+            return Collections.emptyList();
+        }
+        String searchQuery = text.toLowerCase();
+        return itemStorageDao.getAllItemsBySearch().stream()
+                .filter(Item::getAvailable)
+                .filter(item -> item.getName().toLowerCase().contains(searchQuery)
+                        || item.getDescription().contains(searchQuery))
+                .map(itemMapper::toResponseDto)
+                .collect(Collectors.toList());
+    }
+
+    public void validateUser(Long userId) {
+        if (userDao.existsById(userId)) {
             throw new ObjectNotFoundExceptions(HttpStatus.NOT_FOUND);
         }
+    }
 
+    public void validateItemDto(ItemRequestDto itemRequestDto) {
         if (itemRequestDto.getName() == null || itemRequestDto.getName().isEmpty()) {
             throw new RuntimeException("Не введено имя пользователя");
         }
@@ -42,64 +110,12 @@ public class ItemServiceImpl implements ItemService {
         if (itemRequestDto.getAvailable() == null) {
             throw new RuntimeException("Отсутствует поле доступности");
         }
-
-        Item newItem = itemMapper.toEntity(itemRequestDto);
-        newItem.setOwnerId(userId);
-        newItem.setId(itemIdGenerator.getAndIncrement());
-
-        Item savedItem = item.saveItem(newItem);
-        return itemMapper.toResponseDto(savedItem);
     }
 
-    @Override
-    public ItemResponseDto updateItemById(Long userId, Long itemId, ItemRequestDto itemRequestDto) {
-        Item updateItem = item.findById(itemId);
-
-        if (user.existsById(userId)) {
+    public void validateItem(Long itemId) {
+        if (!itemStorageDao.existsItem(itemId)) {
             throw new ObjectNotFoundExceptions(HttpStatus.NOT_FOUND);
-        }
-        if (itemId.equals(item.getOwnerId())) {
-            if (!item.existsItem(itemId)) {
-                throw new ObjectNotFoundExceptions(HttpStatus.NOT_FOUND);
-            }
-        }
-        if (itemRequestDto.getName() != null) {
-            updateItem.setName(itemRequestDto.getName());
-        }
-        if (itemRequestDto.getDescription() != null) {
-            updateItem.setDescription(itemRequestDto.getDescription());
-        }
-        if (itemRequestDto.getAvailable() != null) {
-            updateItem.setAvailable(itemRequestDto.getAvailable());
-        }
-        itemMapper.itemToItemRequestDto(updateItem);
-        item.saveItem(updateItem);
-        return itemMapper.toResponseDto(updateItem);
-    }
 
-    @Override
-    public ItemResponseDto getItemById(Long id, Long userId) {
-        Item getItem = item.findById(id);
-        return itemMapper.toResponseDto(getItem);
-    }
-
-    @Override
-    public List<ItemResponseDto> getAllItems(Long ownerId) {
-        List<Item> itemList = item.getAllItemsByOwner(ownerId);
-        return itemMapper.toResponseDtoList(itemList);
-    }
-
-    @Override
-    public List<ItemResponseDto> searchToItemsByText(Long userId, String text) {
-        if (text == null || text.isEmpty()) {
-            return new ArrayList<>();
         }
-        String searchQuery = text.toLowerCase();
-        return item.getAllItemsBySearch().stream()
-                .filter(Item::getAvailable)
-                .filter(item -> item.getName().toLowerCase().contains(searchQuery)
-                        || item.getDescription().contains(searchQuery))
-                .map(itemMapper::toResponseDto)
-                .collect(Collectors.toList());
     }
 }

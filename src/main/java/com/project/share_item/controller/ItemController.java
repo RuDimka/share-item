@@ -1,5 +1,6 @@
 package com.project.share_item.controller;
 
+import com.project.share_item.dto.ItemDto;
 import com.project.share_item.dto.ItemRequestDto;
 import com.project.share_item.dto.ItemResponseDto;
 import com.project.share_item.service.ItemService;
@@ -25,8 +26,8 @@ public class ItemController {
     @PatchMapping("/{itemId}")
     public ItemResponseDto updateItemById(@RequestHeader("X-Sharer-User-Id") Long userId,
                                           @PathVariable Long itemId,
-                                          @RequestBody ItemRequestDto itemRequestDto) {
-        return itemService.updateItemById(userId, itemId, itemRequestDto);
+                                          @RequestBody ItemDto itemDto) {
+        return itemService.updateItemById(userId, itemId, itemDto);
     }
 
     @GetMapping("/{id}")
