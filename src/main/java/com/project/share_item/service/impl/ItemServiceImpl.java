@@ -115,7 +115,6 @@ public class ItemServiceImpl implements ItemService {
     public void validateItem(Long itemId) {
         if (!itemStorageDao.existsItem(itemId)) {
             throw new ObjectNotFoundExceptions(HttpStatus.NOT_FOUND);
-
         }
     }
 }

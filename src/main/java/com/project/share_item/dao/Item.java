@@ -6,7 +6,6 @@ import org.springframework.stereotype.Repository;
 @Data
 @Repository
 public class Item {
-
     private Long id;
     private String name;
     private String description;
