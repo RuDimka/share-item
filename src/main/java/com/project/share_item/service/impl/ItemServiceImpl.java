@@ -30,7 +30,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemResponseDto addNewItem(Long userId, ItemRequestDto itemRequestDto) {
-        log.info("Добавление нового предмета");
+        log.info("Вещь {} добавлена пользователем {}", itemRequestDto.getName(), userId);
         validateUser(userId);
         validateItemDto(itemRequestDto);
 
@@ -44,7 +44,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemResponseDto updateItemById(Long userId, Long itemId, ItemDto itemDto) {
-        log.info("Редактирование предмета с id {}", itemId);
+        log.info("Пользователь {} отредактировал вещь {}", userId, itemId);
         Item updateItem = itemStorageDao.findById(itemId);
         validateItem(itemId);
         validateUser(userId);
@@ -65,21 +65,21 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemResponseDto getItemById(Long id, Long userId) {
-        log.info("Получение предмета с id {}", id);
+        log.info("Получен предмета {}", id);
         Item getItem = itemStorageDao.findById(id);
         return itemMapper.toResponseDto(getItem);
     }
 
     @Override
     public List<ItemResponseDto> getAllItems(Long ownerId) {
-        log.info("Получение списка вещей");
+        log.info("Получен список вещей");
         List<Item> itemList = itemStorageDao.getAllItemsByOwner(ownerId);
         return itemMapper.toResponseDtoList(itemList);
     }
 
     @Override
     public List<ItemResponseDto> searchToItemsByText(Long userId, String text) {
-        log.info("Поиск предмета - {}", text);
+        log.info("Пользователь {} нашёл вещь {}", userId, text);
         if (text == null || text.isEmpty()) {
             return Collections.emptyList();
         }

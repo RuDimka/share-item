@@ -22,7 +22,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto createUser(UserDto userDto) {
-        log.info("Добавление нового пользователя");
+        log.info("Добавлен пользователь {} ", userDto.getName());
         if (userDto.getEmail().isEmpty()) {
             userDto.setEmail("default@mail.ru");
         }
@@ -39,7 +39,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<UserDto> getAllUsers() {
-        log.info("Получение списка всех пользователей");
+        log.info("Получен список всех пользователей");
         List<User> userList = userStorageDao.getAllUsers();
         return userList.stream()
                 .map(userMapper::toResponseDto)
@@ -47,14 +47,14 @@ public class UserServiceImpl implements UserService {
     }
 
     public UserDto getUserById(Long id) {
-        log.info("Получение пользователя с id: {}", id);
+        log.info("Получен пользователь {}", id);
         User getUser = userStorageDao.findById(id);
         return userMapper.toResponseDto(getUser);
     }
 
     @Override
     public UserDto updateUserById(Long id, UserDto userDto) {
-        log.info("Редактирование информации о пользователе с id: {}", id);
+        log.info("Информации о пользователе {} обновлена", id);
         User updateUser = userStorageDao.findById(id);
         userWithEmailExists(userDto);
         if (userDto.getEmail() != null) {
@@ -69,7 +69,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User deleteUser(Long id) {
-        log.info("Удаление пользователя с id: {}", id);
+        log.info("Пользователя {} удален", id);
         return userStorageDao.deleteUser(id);
     }
 
