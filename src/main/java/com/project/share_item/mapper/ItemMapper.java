@@ -1,6 +1,6 @@
 package com.project.share_item.mapper;
 
-import com.project.share_item.dao.Item;
+import com.project.share_item.entity.Item;
 import com.project.share_item.dto.ItemRequestDto;
 import com.project.share_item.dto.ItemResponseDto;
 import org.mapstruct.Mapper;

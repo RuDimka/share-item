@@ -1,5 +1,7 @@
 spring:
   application:
     name: share_item
-server:
-  port: 8080
+  datasource:
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: dima
+    password: dima

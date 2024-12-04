@@ -1,8 +1,8 @@
 package com.project.share_item.service.impl;
 
-import com.project.share_item.dao.Item;
-import com.project.share_item.dao.ItemStorageDao;
-import com.project.share_item.dao.UserStorageDao;
+import com.project.share_item.Repository.ItemRepository;
+import com.project.share_item.Repository.UserRepository;
+import com.project.share_item.entity.Item;
 import com.project.share_item.dto.ItemDto;
 import com.project.share_item.dto.ItemRequestDto;
 import com.project.share_item.dto.ItemResponseDto;
@@ -23,10 +23,10 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 public class ItemServiceImpl implements ItemService {
-    private final ItemStorageDao itemStorageDao;
+    private final ItemRepository itemRepository;
     private final ItemMapper itemMapper;
-    private final AtomicLong itemIdGenerator = new AtomicLong(1);
-    private final UserStorageDao userDao;
+    //private final AtomicLong itemIdGenerator = new AtomicLong(1);
+    private final UserRepository userRepository;
 
     @Override
     public ItemResponseDto addNewItem(Long userId, ItemRequestDto itemRequestDto) {
@@ -36,45 +36,49 @@ public class ItemServiceImpl implements ItemService {
 
         Item newItem = itemMapper.toEntity(itemRequestDto);
         newItem.setOwnerId(userId);
-        newItem.setId(itemIdGenerator.getAndIncrement());
+        //newItem.setId(itemIdGenerator.getAndIncrement());
 
-        Item savedItem = itemStorageDao.saveItem(newItem);
-        return itemMapper.toResponseDto(savedItem);
+        //Item savedItem = itemRepository.saveItem(newItem);
+        //return itemMapper.toResponseDto(savedItem);
+        return null;
     }
 
     @Override
     public ItemResponseDto updateItemById(Long userId, Long itemId, ItemDto itemDto) {
         log.info("Пользователь {} отредактировал вещь {}", userId, itemId);
-        Item updateItem = itemStorageDao.findById(itemId);
-        validateItem(itemId);
+        //Item updateItem = itemRepository.findById(itemId);
+        //validateItem(itemId);
         validateUser(userId);
 
-        if (itemDto.getName() != null) {
-            updateItem.setName(itemDto.getName());
-        }
-        if (itemDto.getDescription() != null) {
-            updateItem.setDescription(itemDto.getDescription());
-        }
-        if (itemDto.getAvailable() != null) {
-            updateItem.setAvailable(itemDto.getAvailable());
-        }
-        itemMapper.itemToItemRequestDto(updateItem);
-        itemStorageDao.saveItem(updateItem);
-        return itemMapper.toResponseDto(updateItem);
+//        if (itemDto.getName() != null) {
+//            updateItem.setName(itemDto.getName());
+//        }
+//        if (itemDto.getDescription() != null) {
+//            updateItem.setDescription(itemDto.getDescription());
+//        }
+//        if (itemDto.getAvailable() != null) {
+//            updateItem.setAvailable(itemDto.getAvailable());
+//        }
+//        itemMapper.itemToItemRequestDto(updateItem);
+//        itemRepository.saveItem(updateItem);
+//        return itemMapper.toResponseDto(updateItem);
+        return null;
     }
 
     @Override
     public ItemResponseDto getItemById(Long id, Long userId) {
         log.info("Получен предмета {}", id);
-        Item getItem = itemStorageDao.findById(id);
-        return itemMapper.toResponseDto(getItem);
+        //Item getItem = itemRepository.findById(id);
+        //return itemMapper.toResponseDto(getItem);
+        return null;
     }
 
     @Override
     public List<ItemResponseDto> getAllItems(Long ownerId) {
         log.info("Получен список вещей");
-        List<Item> itemList = itemStorageDao.getAllItemsByOwner(ownerId);
-        return itemMapper.toResponseDtoList(itemList);
+        //List<Item> itemList = itemRepository.getAllItemsByOwner(ownerId);
+        //return itemMapper.toResponseDtoList(itemList);
+        return null;
     }
 
     @Override
@@ -83,17 +87,18 @@ public class ItemServiceImpl implements ItemService {
         if (text == null || text.isEmpty()) {
             return Collections.emptyList();
         }
-        String searchQuery = text.toLowerCase();
-        return itemStorageDao.getAllItemsBySearch().stream()
-                .filter(Item::getAvailable)
-                .filter(item -> item.getName().toLowerCase().contains(searchQuery)
-                        || item.getDescription().contains(searchQuery))
-                .map(itemMapper::toResponseDto)
-                .collect(Collectors.toList());
+//        String searchQuery = text.toLowerCase();
+//        return itemRepository.getAllItemsBySearch().stream()
+////                .filter(Item::getAvailable)
+////                .filter(item -> item.getName().toLowerCase().contains(searchQuery)
+////                        || item.getDescription().contains(searchQuery))
+////                .map(itemMapper::toResponseDto)
+//                .collect(Collectors.toList());
+        return null;
     }
 
     public void validateUser(Long userId) {
-        if (userDao.existsById(userId)) {
+        if (userRepository.existsById(Math.toIntExact(userId))) {
             throw new ObjectNotFoundExceptions(HttpStatus.NOT_FOUND);
         }
     }
@@ -112,9 +117,9 @@ public class ItemServiceImpl implements ItemService {
         }
     }
 
-    public void validateItem(Long itemId) {
-        if (!itemStorageDao.existsItem(itemId)) {
-            throw new ObjectNotFoundExceptions(HttpStatus.NOT_FOUND);
-        }
-    }
+//    public void validateItem(Long itemId) {
+//        if (!itemRepository.existsItem(itemId)) {
+//            throw new ObjectNotFoundExceptions(HttpStatus.NOT_FOUND);
+//        }
+//    }
 }

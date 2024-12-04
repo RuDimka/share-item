@@ -1,21 +1,17 @@
 package com.project.share_item.service;
 
-import com.project.share_item.dao.User;
 import com.project.share_item.dto.UserDto;
+import com.project.share_item.entity.User;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 public interface UserService {
 
-    UserDto createUser(UserDto userDto);
+    User createUser(UserDto userDto);
 
-    List<UserDto> getAllUsers();
+    UserDto getUserById(int id);
 
-    UserDto getUserById(Long id);
+    UserDto updateUserById(int id, UserDto userDto);
 
-    UserDto updateUserById(Long id, UserDto userDto);
-
-    User deleteUser(Long id);
+    void deleteUser(Integer id);
 }
